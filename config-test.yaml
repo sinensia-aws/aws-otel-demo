@@ -1,0 +1,42 @@
+extensions:
+  health_check:
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+
+exporters:
+  debug:
+    verbosity: detailed
+  awsxray:
+    region: 'eu-west-1'
+  awsemf:
+    region: 'eu-west-1'
+  awscloudwatchlogs:
+    log_group_name: "testing-logs"
+    log_stream_name: "testing-integrations-stream"
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      exporters: [awscloudwatchlogs]
+      #exporters: [debug] # console
+    traces:
+      receivers: [otlp]
+      exporters: [awsxray]
+    metrics:
+      receivers: [otlp]
+      exporters: [awsemf]
+
+  extensions: [pprof]
+  telemetry:
+    logs:
+      level: debug
